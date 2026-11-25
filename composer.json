@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": "^8.3",
-        "cachethq/core": "dev-main",
+        "cachethq/core": "dev-fix/triagem-simples",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^13.0",
         "laravel/nightwatch": "^1.0",
@@ -70,6 +70,12 @@
             "pestphp/pest-plugin": true
         }
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/matheusviegas/cachet-core.git"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require-dev": {

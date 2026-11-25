@@ -11,6 +11,8 @@
 
 use App\Models\User;
 use Cachet\Cachet;
+use Cachet\Enums\DefaultGroupEnum;
+use Cachet\Models\Group;
 
 it('has Cachet installed', function () {
     expect(Cachet::version())->not->toBeEmpty();
@@ -37,8 +39,8 @@ it('serves the dashboard to authenticated users', function () {
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
-        'is_admin' => true,
     ]);
+    Group::findDefault(DefaultGroupEnum::administrators)->users()->attach($user);
 
     $this->actingAs($user)
         ->get('/dashboard')

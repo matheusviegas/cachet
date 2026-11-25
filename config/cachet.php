@@ -1,15 +1,13 @@
 <?php
 
 use App\Models\User;
-
-/*
- * This file is part of Cachet.
- *
- * (c) Alt Three Services Limited
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+use Cachet\Http\Middleware\AuthenticateApiIfProtected;
+use Cachet\Http\Middleware\AuthenticateMcpIfProtected;
+use Cachet\Http\Middleware\EnsureApiIsEnabled;
+use Cachet\Http\Middleware\EnsureMcpIsEnabled;
+use Cachet\Http\Middleware\ForceJsonResponse;
+use Cachet\Http\Middleware\SetStatusPageLocale;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 
 return [
 
@@ -81,10 +79,42 @@ return [
      */
     'middleware' => [
         'web',
+        SetStatusPageLocale::class,
+        //        \Cachet\Http\Middleware\AuthenticateRemoteUser::class,
     ],
 
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet API Middleware
+     |--------------------------------------------------------------------------
+     |
+     | This is the middleware that will be applied to the Cachet API routes.
+     | Cachet manages its own rate limiting via the "cachet.api_rate_limit"
+     | option, so the host application's "api" middleware group (which may
+     | register its own, more restrictive "throttle:api" limiter) is
+     | intentionally not included here.
+     |
+     */
     'api_middleware' => [
-        'api',
+        ForceJsonResponse::class,
+        EnsureApiIsEnabled::class,
+        AuthenticateApiIfProtected::class,
+        SubstituteBindings::class,
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet MCP Middleware
+     |--------------------------------------------------------------------------
+     |
+     | This is the middleware that will be applied to the Cachet MCP server
+     | endpoint. The MCP server is disabled until the "Enable MCP server"
+     | setting is turned on from the dashboard.
+     |
+     */
+    'mcp_middleware' => [
+        EnsureMcpIsEnabled::class,
+        AuthenticateMcpIfProtected::class,
     ],
 
     'trusted_proxies' => env('CACHET_TRUSTED_PROXIES', ''),
@@ -100,6 +130,18 @@ return [
      |
      */
     'api_rate_limit' => env('CACHET_API_RATE_LIMIT', 300),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet MCP Rate Limit (attempts per minute)
+     |--------------------------------------------------------------------------
+     |
+     | This is the rate limit for the Cachet MCP server. By default, the MCP
+     | server is rate limited to 300 requests a minute. You can adjust the
+     | limit as needed by your application.
+     |
+     */
+    'mcp_rate_limit' => env('CACHET_MCP_RATE_LIMIT', 300),
 
     /*
      |--------------------------------------------------------------------------
@@ -125,15 +167,113 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | Cachet Settings Cache
+     |--------------------------------------------------------------------------
+     |
+     | Cache Cachet's settings so they are not read from the database on every
+     | request. The cache is refreshed automatically whenever settings are
+     | saved, so it never serves stale values.
+     |
+     */
+    'settings_cache' => env('CACHET_SETTINGS_CACHE', true),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet Image Uploads
+     |--------------------------------------------------------------------------
+     |
+     | Configure where custom images are stored, their maximum size in
+     | kilobytes, and the MIME types that may be uploaded.
+     |
+     */
+    'uploads' => [
+        'disk' => env('CACHET_UPLOAD_DISK', 'public'),
+        'max_size' => (int) env('CACHET_UPLOAD_MAX_SIZE', 1024),
+        'image_mime_types' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('CACHET_UPLOAD_IMAGE_MIME_TYPES', 'image/jpeg,image/png,image/gif,image/webp')),
+        ))),
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet Migrations
+     |--------------------------------------------------------------------------
+     |
+     | Whether Cachet loads its migrations into the application's migrator.
+     | Disable this when the host application manages Cachet's migrations
+     | itself.
+     |
+     */
+    'run_migrations' => env('CACHET_RUN_MIGRATIONS', true),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet Schedules
+     |--------------------------------------------------------------------------
+     |
+     | Whether Cachet registers its scheduled tasks (beacon, notifications,
+     | pruning) with the application's scheduler. Disable this when the
+     | host application schedules these commands itself.
+     |
+     */
+    'register_schedules' => env('CACHET_REGISTER_SCHEDULES', true),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet Component Checks
+     |--------------------------------------------------------------------------
+     |
+     | Configure how long component check results are kept before they are
+     | pruned by the model:prune scheduled task.
+     |
+     */
+    'checks' => [
+        'prune_checks_after_days' => env('CACHET_PRUNE_CHECKS_AFTER_DAYS', 30),
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet Uptime History
+     |--------------------------------------------------------------------------
+     |
+     | cachet:record-uptime stores one row per component per day, refreshed
+     | every fifteen minutes. Rows older than the retention are pruned by
+     | the model:prune scheduled task.
+     |
+     */
+    'uptime' => [
+        'retention_days' => (int) env('CACHET_UPTIME_RETENTION_DAYS', 365),
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet Component List
+     |--------------------------------------------------------------------------
+     |
+     | Used by the "list" component layout of the status page. The list is
+     | paginated, and the grid view shows at most grid_limit components
+     | before asking the visitor to narrow the filters.
+     |
+     */
+    'component_list' => [
+        'per_page' => (int) env('CACHET_COMPONENT_LIST_PER_PAGE', 50),
+        'grid_limit' => (int) env('CACHET_COMPONENT_GRID_LIMIT', 2000),
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
      | Cachet Webhooks
      |--------------------------------------------------------------------------
      |
-     | Configure how Cachet sends webhooks for events.
+     | Configure how Cachet sends webhooks for events. When the connection or
+     | queue name is null, the application's default queue connection and
+     | queue are used.
      |
      */
     'webhooks' => [
-        'queue_connection' => env('CACHET_WEBHOOK_QUEUE_CONNECTION', 'default'),
-        'queue_name' => env('CACHET_WEBHOOK_QUEUE_NAME', 'webhooks'),
+        'queue_connection' => env('CACHET_WEBHOOK_QUEUE_CONNECTION'),
+        'queue_name' => env('CACHET_WEBHOOK_QUEUE_NAME'),
 
         'logs' => [
             'prune_logs_after_days' => 30,
@@ -159,6 +299,7 @@ return [
         'nl' => 'Nederlands',
         'ph' => 'Filipino',
         'pt_BR' => 'Português (BR)',
+        'pt_PT' => 'Português (PT)',
         'zh_CN' => '简体中文',
         'zh_TW' => '繁體中文',
     ],
@@ -173,6 +314,21 @@ return [
      |
      */
     'demo_mode' => env('CACHET_DEMO_MODE', false),
+
+    /*
+     |--------------------------------------------------------------------------
+     | Cachet Template Renderers
+     |--------------------------------------------------------------------------
+     |
+     | Configure which renderers a template body may be rendered with. Twig
+     | bodies are rendered inside a sandbox. Blade bodies are compiled to
+     | PHP and run with the permissions of the application, so the Blade
+     | renderer is only used when an installation enables it here.
+     |
+     */
+    'renderers' => [
+        'blade' => env('CACHET_BLADE_RENDERER', false),
+    ],
 
     /*
      |--------------------------------------------------------------------------
