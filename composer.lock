@@ -510,12 +510,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/matheusviegas/cachet-core.git",
-                "reference": "f510afe76bca83a9187530ff70c49ff377c02ad6"
+                "reference": "b61bbf9278302b4a058db4b34e6f202cf5d3ed38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/matheusviegas/cachet-core/zipball/f510afe76bca83a9187530ff70c49ff377c02ad6",
-                "reference": "f510afe76bca83a9187530ff70c49ff377c02ad6",
+                "url": "https://api.github.com/repos/matheusviegas/cachet-core/zipball/b61bbf9278302b4a058db4b34e6f202cf5d3ed38",
+                "reference": "b61bbf9278302b4a058db4b34e6f202cf5d3ed38",
                 "shasum": ""
             },
             "require": {
@@ -639,7 +639,7 @@
                 "issues": "https://github.com/cachethq/core/issues",
                 "source": "https://github.com/cachethq/core"
             },
-            "time": "2026-11-25T18:15:27+00:00"
+            "time": "2026-11-25T20:08:29+00:00"
         },
         {
             "name": "carbonphp/carbon-doctrine-types",
