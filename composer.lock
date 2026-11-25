@@ -510,12 +510,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/matheusviegas/cachet-core.git",
-                "reference": "b61bbf9278302b4a058db4b34e6f202cf5d3ed38"
+                "reference": "c5142c15d80988b91af2aad82b3d4595c380eef0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/matheusviegas/cachet-core/zipball/b61bbf9278302b4a058db4b34e6f202cf5d3ed38",
-                "reference": "b61bbf9278302b4a058db4b34e6f202cf5d3ed38",
+                "url": "https://api.github.com/repos/matheusviegas/cachet-core/zipball/c5142c15d80988b91af2aad82b3d4595c380eef0",
+                "reference": "c5142c15d80988b91af2aad82b3d4595c380eef0",
                 "shasum": ""
             },
             "require": {
@@ -639,7 +639,7 @@
                 "issues": "https://github.com/cachethq/core/issues",
                 "source": "https://github.com/cachethq/core"
             },
-            "time": "2026-11-25T20:08:29+00:00"
+            "time": "2026-11-25T20:16:48+00:00"
         },
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -3590,16 +3590,16 @@
         },
         {
             "name": "league/commonmark",
-            "version": "2.10.8",
+            "version": "2.10.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/commonmark.git",
-                "reference": "681e662a40c805c567f52d603b64d55282ea356c"
+                "reference": "ab5ff8c80fd69abaeb4d57d7711d389248f219e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/681e662a40c805c567f52d603b64d55282ea356c",
-                "reference": "681e662a40c805c567f52d603b64d55282ea356c",
+                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/ab5ff8c80fd69abaeb4d57d7711d389248f219e4",
+                "reference": "ab5ff8c80fd69abaeb4d57d7711d389248f219e4",
                 "shasum": ""
             },
             "require": {
@@ -3693,8 +3693,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-11-24T15:44:47+00:00",
-            "published-time": "2026-11-24T15:45:01+00:00"
+            "time": "2026-11-25T20:08:31+00:00",
+            "published-time": "2026-11-25T20:11:11+00:00"
         },
         {
             "name": "league/config",
