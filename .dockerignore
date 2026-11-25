@@ -1,0 +1,37 @@
+# Contexto do build de deploy/Dockerfile (raiz do repositório).
+# Dependências e arquivos gerados são recriados no build.
+.git
+.github
+.agents
+.amp
+.idea
+.vscode
+.fleet
+node_modules
+vendor
+tests
+art
+
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+**/.env
+auth.json
+
+# Gerados pelo publish ou em runtime
+public/build
+public/hot
+public/storage
+public/vendor
+public/css/filament
+public/fonts/filament
+public/js/filament
+bootstrap/cache/*.php
+storage/*.key
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/public/*
+database/*.sqlite*

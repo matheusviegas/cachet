@@ -1,0 +1,98 @@
+name: cachet
+
+x-cachet: &cachet
+  image: cachet:3.x-local
+  env_file:
+    - path: .env
+      required: true
+  user: "10001:10001"
+  read_only: true
+  init: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=10001,gid=10001,mode=0700
+    - /app/bootstrap/cache:rw,noexec,nosuid,nodev,size=16m,uid=10001,gid=10001,mode=0700
+    - /config/caddy:rw,noexec,nosuid,nodev,size=1m,uid=10001,gid=10001,mode=0700
+    - /data/caddy:rw,noexec,nosuid,nodev,size=1m,uid=10001,gid=10001,mode=0700
+  volumes:
+    - storage:/app/storage
+    - database:/var/lib/cachet
+  networks:
+    - cachet
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  app:
+    <<: *cachet
+    build:
+      # Raiz do fork do app; o Dockerfile fica nesta pasta.
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      RUN_MIGRATIONS: "true"
+    ports:
+      # Restrinja CACHET_BIND_IP ao IP da interface que o nginx de borda alcança.
+      - "${CACHET_BIND_IP:-0.0.0.0}:8080:8080"
+    # Dimensionado para EC2 com 1 vCPU / 2 GB. Sem limite de CPU: o app pode
+    # usar a vCPU inteira e tem prioridade (cpu_shares) sobre queue/scheduler.
+    cpu_shares: 1024
+    deploy:
+      resources:
+        limits:
+          pids: 256
+          memory: 512M
+        reservations:
+          memory: 192M
+
+  # Processa a fila (e-mails de assinantes, webhooks).
+  queue:
+    <<: *cachet
+    command: ["php", "artisan", "queue:work", "--memory=128", "--tries=3", "--backoff=10", "--max-time=3600", "--sleep=3"]
+    healthcheck:
+      disable: true
+    depends_on:
+      app:
+        condition: service_healthy
+    cpu_shares: 64
+    deploy:
+      resources:
+        limits:
+          pids: 64
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          memory: 64M
+
+  # Substitui o cron `* * * * * php artisan schedule:run`.
+  scheduler:
+    <<: *cachet
+    command: ["php", "artisan", "schedule:work"]
+    healthcheck:
+      disable: true
+    depends_on:
+      app:
+        condition: service_healthy
+    cpu_shares: 64
+    deploy:
+      resources:
+        limits:
+          pids: 64
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          memory: 64M
+
+volumes:
+  storage:
+  database:
+
+networks:
+  cachet:

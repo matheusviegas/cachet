@@ -1,0 +1,32 @@
+{
+	# Sem API admin (porta 2019) e sem TLS automático: o TLS termina no nginx de borda.
+	admin off
+	auto_https off
+	skip_install_trust
+	persist_config off
+
+	# O padrão é 2x CPUs (2 threads em 1 vCPU). 4 threads evitam que uma
+	# requisição presa em I/O (ex.: feed RSS externo) trave o atendimento.
+	frankenphp {
+		num_threads 4
+	}
+}
+
+:8080 {
+	root * /app/public
+
+	request_body {
+		max_size 16MB
+	}
+
+	encode zstd br gzip
+
+	header {
+		-Server
+		-X-Powered-By
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	php_server
+}
